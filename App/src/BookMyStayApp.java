@@ -17,7 +17,7 @@ class RoomInventory {
     }
 }
 
-}public class BookMyStayApp {
+public class BookMyStayApp {
 
     public static void main(String[] args) {
 
@@ -43,3 +43,4 @@ class RoomInventory {
         System.out.println("Price per night: 5000.0");
         System.out.println("Available Rooms: " + inventory.getAvailableRooms("Suite"));
     }
+}
