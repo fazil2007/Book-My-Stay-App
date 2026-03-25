@@ -1,82 +1,54 @@
+import java.io.*;
 import java.util.*;
 
-class RoomInventory {
-    private Map<String, Integer> inventory = new HashMap<>();
-    private Map<String, Integer> counter = new HashMap<>();
+class RoomInventory implements Serializable {
+    Map<String, Integer> inventory;
 
     public RoomInventory() {
+        inventory = new HashMap<>();
         inventory.put("Single", 5);
         inventory.put("Double", 3);
         inventory.put("Suite", 2);
-
-        counter.put("Single", 0);
-        counter.put("Double", 0);
-        counter.put("Suite", 0);
     }
 
-    public synchronized String allocateRoom(String guest, String type) {
-        if (inventory.get(type) > 0) {
-            int count = counter.get(type) + 1;
-            counter.put(type, count);
-
-            inventory.put(type, inventory.get(type) - 1);
-
-            String roomId = type + "-" + count;
-            System.out.println("Booking confirmed for Guest: " + guest + ", Room ID: " + roomId);
-            return roomId;
-        }
-        return null;
-    }
-
-    public void printInventory() {
-        System.out.println("\nRemaining Inventory:");
-        for (String key : inventory.keySet()) {
-            System.out.println(key + ": " + inventory.get(key));
-        }
+    public Map<String, Integer> getInventory() {
+        return inventory;
     }
 }
 
-class BookingTask implements Runnable {
-    private RoomInventory inventory;
-    private String guest;
-    private String type;
+public class BookMyStayApp {
 
-    public BookingTask(RoomInventory inventory, String guest, String type) {
-        this.inventory = inventory;
-        this.guest = guest;
-        this.type = type;
-    }
-
-    public void run() {
-        inventory.allocateRoom(guest, type);
-    }
-}
-
-public class BookMyStayApp{
+    private static final String FILE_NAME = "inventory.dat";
 
     public static void main(String[] args) {
 
-        RoomInventory inventory = new RoomInventory();
+        System.out.println("System Recovery");
 
-        System.out.println("Concurrent Booking Simulation");
+        RoomInventory inventory = loadInventory();
 
-        Thread t1 = new Thread(new BookingTask(inventory, "Abhi", "Single"));
-        Thread t2 = new Thread(new BookingTask(inventory, "Vanmathi", "Double"));
-        Thread t3 = new Thread(new BookingTask(inventory, "Kural", "Suite"));
-        Thread t4 = new Thread(new BookingTask(inventory, "Subha", "Single"));
+        System.out.println("\nCurrent Inventory:");
+        for (String key : inventory.getInventory().keySet()) {
+            System.out.println(key + ": " + inventory.getInventory().get(key));
+        }
 
-        t1.start();
-        t2.start();
-        t3.start();
-        t4.start();
+        saveInventory(inventory);
+        System.out.println("Inventory saved successfully.");
+    }
 
-        try {
-            t1.join();
-            t2.join();
-            t3.join();
-            t4.join();
-        } catch (InterruptedException e) {}
+    public static void saveInventory(RoomInventory inventory) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
+            oos.writeObject(inventory);
+        } catch (IOException e) {
+            System.out.println("Error saving inventory.");
+        }
+    }
 
-        inventory.printInventory();
+    public static RoomInventory loadInventory() {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
+            return (RoomInventory) ois.readObject();
+        } catch (Exception e) {
+            System.out.println("No valid inventory data found. Starting fresh.");
+            return new RoomInventory();
+        }
     }
 }
