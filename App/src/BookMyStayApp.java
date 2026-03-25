@@ -1,36 +1,46 @@
 import java.util.*;
 
-class InvalidRoomTypeException extends Exception {
-    public InvalidRoomTypeException(String message) {
-        super(message);
+class RoomInventory {
+    private Map<String, Integer> inventory;
+
+    public RoomInventory() {
+        inventory = new HashMap<>();
+        inventory.put("Single", 5);
+        inventory.put("Double", 3);
+        inventory.put("Suite", 2);
+    }
+
+    public void incrementRoom(String type) {
+        inventory.put(type, inventory.get(type) + 1);
+    }
+
+    public int getAvailableRooms(String type) {
+        return inventory.get(type);
     }
 }
 
 public class BookMyStayApp {
 
-    public static void validateRoomType(String type) throws InvalidRoomTypeException {
-        if (!type.equals("Single") && !type.equals("Double") && !type.equals("Suite")) {
-            throw new InvalidRoomTypeException("Invalid room type selected.");
-        }
-    }
-
     public static void main(String[] args) {
 
-        Scanner sc = new Scanner(System.in);
+        RoomInventory inventory = new RoomInventory();
 
-        System.out.println("Booking Validation");
+        Stack<String> rollbackStack = new Stack<>();
+        rollbackStack.push("Single-1");
 
-        System.out.print("Enter guest name: ");
-        String name = sc.nextLine();
+        System.out.println("Booking Cancellation");
 
-        System.out.print("Enter room type (Single/Double/Suite): ");
-        String roomType = sc.nextLine();
+        if (!rollbackStack.isEmpty()) {
 
-        try {
-            validateRoomType(roomType);
-            System.out.println("Booking successful for " + name);
-        } catch (InvalidRoomTypeException e) {
-            System.out.println("Booking failed: " + e.getMessage());
+            String reservationId = rollbackStack.pop();
+            String roomType = reservationId.split("-")[0];
+
+            inventory.incrementRoom(roomType);
+
+            System.out.println("Booking cancelled successfully. Inventory restored for room type: " + roomType);
+            System.out.println("\nRollback History (Most Recent First):");
+            System.out.println("Released Reservation ID: " + reservationId);
+            System.out.println("\nUpdated " + roomType + " Room Availability: " + inventory.getAvailableRooms(roomType));
         }
     }
 }
