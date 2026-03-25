@@ -1,42 +1,36 @@
 import java.util.*;
 
-class Reservation {
-    String guestName;
-    String roomType;
-
-    public Reservation(String guestName, String roomType) {
-        this.guestName = guestName;
-        this.roomType = roomType;
-    }
-}
-
-class BookingHistory {
-    private List<Reservation> history = new ArrayList<>();
-
-    public void addReservation(Reservation r) {
-        history.add(r);
-    }
-
-    public List<Reservation> getHistory() {
-        return history;
+class InvalidRoomTypeException extends Exception {
+    public InvalidRoomTypeException(String message) {
+        super(message);
     }
 }
 
 public class BookMyStayApp {
 
+    public static void validateRoomType(String type) throws InvalidRoomTypeException {
+        if (!type.equals("Single") && !type.equals("Double") && !type.equals("Suite")) {
+            throw new InvalidRoomTypeException("Invalid room type selected.");
+        }
+    }
+
     public static void main(String[] args) {
 
-        BookingHistory bookingHistory = new BookingHistory();
+        Scanner sc = new Scanner(System.in);
 
-        bookingHistory.addReservation(new Reservation("Abhi", "Single"));
-        bookingHistory.addReservation(new Reservation("Subha", "Double"));
-        bookingHistory.addReservation(new Reservation("Vanmathi", "Suite"));
+        System.out.println("Booking Validation");
 
-        System.out.println("Booking History and Reporting\n");
-        System.out.println("Booking History Report");
+        System.out.print("Enter guest name: ");
+        String name = sc.nextLine();
 
-        for (Reservation r : bookingHistory.getHistory()) {
-            System.out.println("Guest: " + r.guestName + ", Room Type: " + r.roomType);
+        System.out.print("Enter room type (Single/Double/Suite): ");
+        String roomType = sc.nextLine();
+
+        try {
+            validateRoomType(roomType);
+            System.out.println("Booking successful for " + name);
+        } catch (InvalidRoomTypeException e) {
+            System.out.println("Booking failed: " + e.getMessage());
         }
     }
 }
